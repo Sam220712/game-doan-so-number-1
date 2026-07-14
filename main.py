@@ -54,6 +54,8 @@ else:
     st.write(
         f"Đang đoán số từ **1 đến {st.session_state.gioi_han_so}**. Hệ số điểm: **x{st.session_state.he_so}**"
     )
+
+    # Hiển thị số lượt đoán hiện tại trước khi bấm nút
     st.info(f"❤️ Số lượt đoán còn lại: **{st.session_state.luot_doan}**")
 
     so_nhap = st.number_input(
@@ -64,8 +66,11 @@ else:
     )
 
     if st.button("Đoán số", disabled=st.session_state.game_over):
+        # Trừ lượt đoán ngay khi người chơi bấm nút
         st.session_state.luot_doan -= 1
+
         if so_nhap == st.session_state.so_bi_mat:
+            # Điểm được tính dựa trên số lượt thực tế sau khi đã trừ
             diem = st.session_state.luot_doan * st.session_state.he_so
             st.success(
                 f"🎉 Chúc mừng! Bạn đã đoán đúng số bí mật là **{st.session_state.so_bi_mat}**."
@@ -80,8 +85,12 @@ else:
             st.session_state.game_over = True
         elif so_nhap < st.session_state.so_bi_mat:
             st.warning("📉 Số bạn đoán QUÁ THẤP!")
+            # Ép trang web tải lại ngay lập tức để cập nhật số lượt đoán mới trên màn hình
+            st.rerun()
         else:
             st.warning("📈 Số bạn đoán QUÁ CAO!")
+            # Ép trang web tải lại ngay lập tức để cập nhật số lượt đoán mới trên màn hình
+            st.rerun()
 
     if st.session_state.game_over:
         if st.button("Chơi lại lượt mới"):
