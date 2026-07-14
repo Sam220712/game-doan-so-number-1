@@ -13,6 +13,7 @@ if "game_started" not in st.session_state:
     st.session_state.he_so = 0
     st.session_state.gioi_han_so = 0
     st.session_state.game_over = False
+    st.session_state.goi_y = ""  # Tạo thêm bộ nhớ để lưu dòng thông báo gợi ý
 
 
 def bat_dau_game(muc_do):
@@ -34,6 +35,7 @@ def bat_dau_game(muc_do):
     )
     st.session_state.game_started = True
     st.session_state.game_over = False
+    st.session_state.goi_y = ""  # Xóa gợi ý cũ khi bắt đầu game mới
 
 
 # Giao diện chính
@@ -55,8 +57,12 @@ else:
         f"Đang đoán số từ **1 đến {st.session_state.gioi_han_so}**. Hệ số điểm: **x{st.session_state.he_so}**"
     )
 
-    # Hiển thị số lượt đoán hiện tại trước khi bấm nút
+    # Hiển thị số lượt đoán hiện tại
     st.info(f"❤️ Số lượt đoán còn lại: **{st.session_state.luot_doan}**")
+
+    # Hiển thị thông báo gợi ý Quá cao / Quá thấp từ bộ nhớ nếu có
+    if st.session_state.goi_y:
+        st.warning(st.session_state.goi_y)
 
     so_nhap = st.number_input(
         "Nhập số bạn nghĩ vào đây:",
@@ -66,11 +72,11 @@ else:
     )
 
     if st.button("Đoán số", disabled=st.session_state.game_over):
-        # Trừ lượt đoán ngay khi người chơi bấm nút
+        # Trừ lượt đoán ngay khi bấm nút
         st.session_state.luot_doan -= 1
 
         if so_nhap == st.session_state.so_bi_mat:
-            # Điểm được tính dựa trên số lượt thực tế sau khi đã trừ
+            st.session_state.goi_y = ""  # Đoán đúng thì xóa dòng gợi ý đi
             diem = st.session_state.luot_doan * st.session_state.he_so
             st.success(
                 f"🎉 Chúc mừng! Bạn đã đoán đúng số bí mật là **{st.session_state.so_bi_mat}**."
@@ -79,17 +85,18 @@ else:
             st.write(f"🏆 Tổng điểm nhận được: **{diem} điểm**!")
             st.session_state.game_over = True
         elif st.session_state.luot_doan == 0:
+            st.session_state.goi_y = ""  # Thua thì xóa dòng gợi ý đi
             st.error(
                 f"💥 Bạn đã hết lượt! Số bí mật là **{st.session_state.so_bi_mat}**. Bạn thua rồi."
             )
             st.session_state.game_over = True
         elif so_nhap < st.session_state.so_bi_mat:
-            st.warning("📉 Số bạn đoán QUÁ THẤP!")
-            # Ép trang web tải lại ngay lập tức để cập nhật số lượt đoán mới trên màn hình
+            # Lưu chữ vào bộ nhớ trước khi reload
+            st.session_state.goi_y = f"📉 Số bạn đoán ({so_nhap}) QUÁ THẤP!"
             st.rerun()
         else:
-            st.warning("📈 Số bạn đoán QUÁ CAO!")
-            # Ép trang web tải lại ngay lập tức để cập nhật số lượt đoán mới trên màn hình
+            # Lưu chữ vào bộ nhớ trước khi reload
+            st.session_state.goi_y = f"📈 Số bạn đoán ({so_nhap}) QUÁ CAO!"
             st.rerun()
 
     if st.session_state.game_over:
